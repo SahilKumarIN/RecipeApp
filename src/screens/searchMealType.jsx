@@ -12,37 +12,39 @@ import {
   ActivityIndicator,
   Modal,
 } from 'react-native';
-import React, {useCallback, useEffect, useState} from 'react';
-import {useNavigation} from '@react-navigation/native';
+import React, {useEffect, useState} from 'react';
+import {useNavigation, useRoute} from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 
-const Search = () => {
+const SearchMealType = () => {
+  const routes = useRoute();
+  const mealType = routes.params;
+
   const navigation = useNavigation();
-  const [searchTxt, setSearchTxt] = useState('');
+  const [searchTxt, setSearchTxt] = useState(routes.params);
   const [result, setResult] = useState([]);
   const [loader, setLoader] = useState(false);
   const [modal, setModal] = useState(false);
   const [cuisineType, setCuisineType] = useState('indian');
-  const [mealType, setMealType] = useState('breakfast');
 
   const searchRecipe = async () => {
-    if (searchTxt === '') {
-      ToastAndroid.show('Empty Search...', 1000);
-    } else {
-      setLoader(true);
+    setLoader(true);
 
-      const resp = await fetch(
-        `https://api.edamam.com/api/recipes/v2?type=public&q=${searchTxt}&mealType=${mealType}&cuisineType=${cuisineType}&app_id=26542a0a&app_key=838f7da80f0a88c3c9c78bd27cc54267`,
-        {
-          method: 'GET',
-        },
-      );
-      // Here API will be called
-      const respData = await resp.json();
-      setResult(respData.hits);
-      setLoader(false);
-    }
+    const resp = await fetch(
+      `https://api.edamam.com/api/recipes/v2?type=public&q=food&mealType=${mealType}&cuisineType=${cuisineType}&app_id=26542a0a&app_key=838f7da80f0a88c3c9c78bd27cc54267`,
+      {
+        method: 'GET',
+      },
+    );
+    // Here API will be called
+    const respData = await resp.json();
+    setResult(respData.hits);
+    setLoader(false);
   };
+
+  useEffect(() => {
+    searchRecipe();
+  }, [cuisineType]);
 
   return (
     <View style={styles.container}>
@@ -54,32 +56,22 @@ const Search = () => {
       <View style={styles.searchContainer}>
         <View style={styles.searchBox}>
           <Image style={styles.icon} source={require('../assets/search.png')} />
-          <TextInput
-            placeholder="Search recipe..."
-            style={styles.searchInput}
-            value={searchTxt}
-            onChangeText={setSearchTxt}
-          />
-          {searchTxt !== '' ? (
-            <Pressable
-              onPress={() => {
-                setSearchTxt('');
-                setResult([]);
+          <Text style={styles.searchInput}>{searchTxt}</Text>
+          {/* {
+            searchTxt !== '' ?
+              <Pressable onPress={() => {
+                setSearchTxt('')
+                setResult([])
               }}>
-              <Image
-                style={styles.icon}
-                source={require('../assets/close.png')}
-              />
-            </Pressable>
-          ) : (
-            ''
-          )}
+                <Image style={styles.icon} source={require('../assets/close.png')} />
+              </Pressable> : ""
+          } */}
         </View>
-        <TouchableOpacity
-          style={styles.searchBtn}
-          onPress={() => searchRecipe()}>
+        {/* <TouchableOpacity style={styles.searchBtn}
+          onPress={() => searchRecipe()}
+        >
           <Text style={styles.searchBtnTxt}>Search</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
       {loader ? (
         <ActivityIndicator
@@ -91,7 +83,7 @@ const Search = () => {
         <View style={styles.flatListContainer}>
           <FlatList
             style={{
-              height: Dimensions.get('window').height - 240,
+              height: Dimensions.get('window').height - 200,
               marginTop: 10,
             }}
             showsVerticalScrollIndicator={false}
@@ -228,54 +220,38 @@ const Search = () => {
               {'Meal Type'}
             </Text>
             <View style={styles.menu}>
-              <Pressable
-                onPress={() => {
-                  setMealType('breakfast');
-                }}>
-                <Text
-                  style={[
-                    styles.menuItem,
-                    mealType == 'breakfast' && styles.selectedMenu,
-                  ]}>
-                  Breakfast
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  setMealType('brunch');
-                }}>
-                <Text
-                  style={[
-                    styles.menuItem,
-                    mealType == 'brunch' && styles.selectedMenu,
-                  ]}>
-                  Brunch
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  setMealType('lunch');
-                }}>
-                <Text
-                  style={[
-                    styles.menuItem,
-                    mealType == 'lunch' && styles.selectedMenu,
-                  ]}>
-                  Lunch
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  setMealType('dinner');
-                }}>
-                <Text
-                  style={[
-                    styles.menuItem,
-                    mealType == 'dinner' && styles.selectedMenu,
-                  ]}>
-                  Dinner
-                </Text>
-              </Pressable>
+              <Text
+                numberOfLines={2}
+                style={[
+                  styles.menuItem,
+                  mealType == 'breakfast' ? styles.selectedMenu : '',
+                ]}>
+                Breakfast
+              </Text>
+              <Text
+                numberOfLines={2}
+                style={[
+                  styles.menuItem,
+                  mealType == 'brunch' ? styles.selectedMenu : '',
+                ]}>
+                Brunch
+              </Text>
+              <Text
+                numberOfLines={2}
+                style={[
+                  styles.menuItem,
+                  mealType == 'lunch' ? styles.selectedMenu : '',
+                ]}>
+                Lunch
+              </Text>
+              <Text
+                numberOfLines={2}
+                style={[
+                  styles.menuItem,
+                  mealType == 'dinner' ? styles.selectedMenu : '',
+                ]}>
+                Dinner
+              </Text>
             </View>
           </View>
         </LinearGradient>
@@ -284,7 +260,7 @@ const Search = () => {
   );
 };
 
-export default Search;
+export default SearchMealType;
 
 const styles = StyleSheet.create({
   container: {
@@ -369,6 +345,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: 'black',
     fontWeight: '500',
+    width: '70%',
+    paddingHorizontal: 10,
   },
   categoryContainer: {
     backgroundColor: '#fefefe',
